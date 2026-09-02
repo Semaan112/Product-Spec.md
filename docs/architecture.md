@@ -1,6 +1,7 @@
 # Architecture Draft: Internal Operations Service Hub
 
 # 1. System Overview & Major Components
+![System Aarchitecture Diagram](./assets/archicture1.png)
 The Internal Operations Service Hub acts as a centralized portal for internal staff to manage operational workflows, submit internal service requests, and track administrative tasks across departments.
 
 * *Operations Web Client:** React-based single-page web interface used by internal employees and administrators to interact with the hub.
