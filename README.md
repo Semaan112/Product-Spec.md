@@ -1,16 +1,35 @@
-# React + Vite
+# Internal Operations Service Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The **Internal Operations Service Hub** is a centralized web portal designed for internal staff to submit service requests, manage operational workflows, and track cross-departmental tasks.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📚 Project Documentation
 
-## React Compiler
+All primary product and technical specifications are organized within the `docs/` directory:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* 📄 **[Product Specification](docs/product-spec.md)** — Core features, target audience, and product requirements.
+* 🏗️ **[System Architecture](docs/architecture.md)** — Architectural overview, system boundaries, and diagram.
+* 🗄️ **[Data Model](docs/data-model.md)** — Entity-relationship details and database schema design.
+* 📝 **[Architectural Decision Records (ADRs)](docs/decisions/ADR-001.md)** — Key technical decisions and rationales.
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## 🛠️ Tech Stack
+
+* **Frontend:** React (Vite SPA)
+* **Backend:** Node.js / Express REST API
+* **Database:** MySQL
+* **Authentication:** OAuth 2.0 / SSO Integration
+
+---
+
+## 🚀 Getting Started
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+
+2. **Run development server:**
+```bash 
+npm run dev
