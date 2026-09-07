@@ -4,9 +4,9 @@
 ![System Aarchitecture Diagram](./assets/archicture1.png)
 The Internal Operations Service Hub acts as a centralized portal for internal staff to manage operational workflows, submit internal service requests, and track administrative tasks across departments.
 
-* *Operations Web Client:** React-based single-page web interface used by internal employees and administrators to interact with the hub.
-* *Core Service API:** Node.js / Express REST API handling business logic, request routing, task state transitions, and role checks.
-* *Operational Database:** MySQL relational database managing durable application state, including user records, audit logs, and service ticket statuses.
+* **Operations Web Client:** React-based single-page web interface used by internal employees and administrators to interact with the hub.
+* **Core Service API:** Node.js / Express REST API handling business logic, request routing, task state transitions, and role checks.
+* **Operational Database:** MySQL relational database managing durable application state, including user records, audit logs, and service ticket statuses.
 
 # 2. System Boundaries & Dependencies
 * *Inside System Boundary:** Operations Web Client, Core Service API, Operational Database, internal authorization rules.
