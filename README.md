@@ -33,3 +33,41 @@ All primary product and technical specifications are organized within the `docs/
 2. **Run development server:**
 ```bash 
 npm run dev
+
+
+---
+
+## Week 2: NestJS Backend Setup & Verification
+
+### How to Run the Backend
+
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   npm install
+
+   npm run start:dev
+
+verify
+
+# 1. Create a ticket
+curl -X POST http://localhost:3000/tickets \
+  -H "Content-Type: application/json" \
+  -d '{"title":"System access issue"}'
+# -> {"id": "...", "status": "submitted", ...} copy the id into $ID
+
+# 2. VALID: submitted -> in_progress
+curl -X POST http://localhost:3000/tickets/$ID/transition \
+  -H "Content-Type: application/json" -d '{"status":"in_progress"}'
+# -> 201, status "in_progress"
+
+# 3. VALID: in_progress -> resolved
+curl -X POST http://localhost:3000/tickets/$ID/transition \
+  -H "Content-Type: application/json" -d '{"status":"resolved"}'
+# -> 201, status "resolved"
+
+# 4. INVALID: resolved -> in_progress (terminal state, rejected)
+curl -X POST http://localhost:3000/tickets/$ID/transition \
+  -H "Content-Type: application/json" -d '{"status":"in_progress"}'
+# -> 400 Bad Request
+
