@@ -1,20 +1,18 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
-import { TicketsService, TicketStatus } from './tickets.service';
+import { Controller, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { TicketsService } from './tickets.service';
+import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('tickets')
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
-  @Get(':id')
-  getTicket(@Param('id') id: string) {
-    return this.ticketsService.getTicket(id);
-  }
-
   @Patch(':id/status')
-  updateStatus(
+  @UseGuards(RolesGuard)
+  async updateStatus(
     @Param('id') id: string,
-    @Body('status') newStatus: TicketStatus,
+    @Body() dto: UpdateTicketStatusDto,
   ) {
-    return this.ticketsService.updateStatus(id, newStatus);
+    return await this.ticketsService.updateStatus(id, dto.status);
   }
 }

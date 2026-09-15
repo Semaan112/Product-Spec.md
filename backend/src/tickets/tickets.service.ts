@@ -1,59 +1,68 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-
-export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
-
-export interface InternalTicket {
-  id: string;
-  department: 'IT' | 'HR' | 'FACILITIES';
-  requester_id: string;
-  assigned_agent_id?: string;
-  status: TicketStatus;
-  updatedAt: Date;
-}
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Ticket } from './entities/ticket.entity';
+import { TicketStatus } from './enums/ticket-status.enum';
 
 @Injectable()
 export class TicketsService {
-  private tickets: Map<string, InternalTicket> = new Map([
+  private readonly tickets = new Map<string, Ticket>([
     [
       'TCK-101',
       {
         id: 'TCK-101',
-        department: 'IT',
-        requester_id: 'USER-001',
-        assigned_agent_id: 'AGENT-007',
-        status: 'OPEN',
+        title: 'System access issue',
+        status: TicketStatus.OPEN,
+        createdAt: new Date(),
         updatedAt: new Date(),
       },
     ],
   ]);
 
-  getTicket(id: string): InternalTicket {
+  findOne(id: string): Ticket {
     const ticket = this.tickets.get(id);
+
     if (!ticket) {
-      throw new NotFoundException(`Ticket ID ${id} not found.`);
+      throw new NotFoundException(`Ticket with ID "${id}" was not found.`);
     }
+
     return ticket;
   }
 
-  updateStatus(id: string, newStatus: TicketStatus): InternalTicket {
-    const ticket = this.getTicket(id);
+  create(title: string): Ticket {
+    const id = `TCK-${this.tickets.size + 101}`;
+    const ticket: Ticket = {
+      id,
+      title,
+      status: TicketStatus.OPEN,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    if (ticket.status === 'RESOLVED') {
+    this.tickets.set(id, ticket);
+    return ticket;
+  }
+
+  updateStatus(id: string, status: TicketStatus): Ticket {
+    const ticket = this.findOne(id);
+
+    const currentIndex = Object.values(TicketStatus).indexOf(ticket.status);
+    const nextIndex = Object.values(TicketStatus).indexOf(status);
+
+    if (currentIndex === -1 || nextIndex === -1) {
+      throw new BadRequestException('Invalid ticket status transition.');
+    }
+
+    if (ticket.status === TicketStatus.RESOLVED) {
       throw new BadRequestException('Invariant Violation: Resolved tickets cannot change status or be reopened.');
     }
 
-    const isValidTransition =
-      (ticket.status === 'OPEN' && newStatus === 'IN_PROGRESS') ||
-      (ticket.status === 'IN_PROGRESS' && newStatus === 'RESOLVED');
-
-    if (!isValidTransition) {
-      throw new BadRequestException(`Invalid state transition from ${ticket.status} to ${newStatus}.`);
+    if (nextIndex !== currentIndex + 1) {
+      throw new BadRequestException(
+        `Invalid state transition from ${ticket.status} to ${status}`,
+      );
     }
 
-    ticket.status = newStatus;
+    ticket.status = status;
     ticket.updatedAt = new Date();
-    this.tickets.set(id, ticket);
-
     return ticket;
   }
 }
