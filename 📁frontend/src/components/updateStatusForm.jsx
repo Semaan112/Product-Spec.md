@@ -6,8 +6,15 @@ const statusOptions = [
   { value: 'INVALID_STATUS', label: 'Invalid status', detail: 'Validation test: expect a rejection' },
 ];
 
+const statusLabels = {
+  OPEN: 'Open',
+  IN_PROGRESS: 'In progress',
+  RESOLVED: 'Resolved',
+};
+
 export function UpdateStatusForm({ ticketId = 'TCK-101' }) {
   const [status, setStatus] = useState('IN_PROGRESS');
+  const [currentStatus, setCurrentStatus] = useState('OPEN');
   const [role, setRole] = useState('AGENT');
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
@@ -33,9 +40,11 @@ export function UpdateStatusForm({ ticketId = 'TCK-101' }) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || `Error ${res.status}: Request failed`);
+        const message = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+        throw new Error(message || `Error ${res.status}: Request failed`);
       }
 
+      setCurrentStatus(data.status);
       setResponse(`Success: Ticket ${data.id} status updated to "${data.status}"`);
     } catch (err) {
       setError(err.message);
@@ -45,6 +54,12 @@ export function UpdateStatusForm({ ticketId = 'TCK-101' }) {
   };
 
   const selectedStatus = statusOptions.find((option) => option.value === status);
+  const currentStatusLabel = statusLabels[currentStatus] || currentStatus;
+  const transitionHint = currentStatus === 'OPEN'
+    ? 'Move the ticket to In progress before resolving it.'
+    : currentStatus === 'IN_PROGRESS'
+      ? 'This ticket is ready to be resolved.'
+      : 'This ticket is complete and cannot be changed.';
 
   return (
     <main className="app-shell">
@@ -75,13 +90,13 @@ export function UpdateStatusForm({ ticketId = 'TCK-101' }) {
           <h2>Customer request</h2>
           <p className="muted">Standard service request awaiting an operational update.</p>
           <div className="divider" />
-          <div className="meta-row"><span>Current status</span><span className="status-pill status-pill--open"><span /> Open</span></div>
+          <div className="meta-row"><span>Current status</span><span className="status-pill status-pill--open"><span /> {currentStatusLabel}</span></div>
           <div className="meta-row"><span>Priority</span><strong>Normal</strong></div>
           <div className="meta-row"><span>Last updated</span><strong>Today, 09:42</strong></div>
           <div className="timeline">
-            <div className="timeline-item timeline-item--active"><span className="timeline-marker" /><div><strong>Open</strong><small>Ticket created</small></div></div>
-            <div className="timeline-item"><span className="timeline-marker" /><div><strong>In progress</strong><small>Next operational step</small></div></div>
-            <div className="timeline-item"><span className="timeline-marker" /><div><strong>Resolved</strong><small>Close the request</small></div></div>
+            <div className={`timeline-item ${currentStatus === 'OPEN' ? 'timeline-item--active' : ''}`}><span className="timeline-marker" /><div><strong>Open</strong><small>Ticket created</small></div></div>
+            <div className={`timeline-item ${currentStatus === 'IN_PROGRESS' ? 'timeline-item--active' : ''}`}><span className="timeline-marker" /><div><strong>In progress</strong><small>Work is actively being handled</small></div></div>
+            <div className={`timeline-item ${currentStatus === 'RESOLVED' ? 'timeline-item--active' : ''}`}><span className="timeline-marker" /><div><strong>Resolved</strong><small>Request completed</small></div></div>
           </div>
         </aside>
 
@@ -103,6 +118,7 @@ export function UpdateStatusForm({ ticketId = 'TCK-101' }) {
                 {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
               <div className="selection-note"><span className="selection-icon">i</span><span>{selectedStatus.detail}</span></div>
+              <div className="selection-note"><span className="selection-icon">-&gt;</span><span>{transitionHint}</span></div>
             </div>
             <button type="submit" disabled={isSubmitting}>
               <span>{isSubmitting ? 'Updating ticket...' : 'Update ticket status'}</span>

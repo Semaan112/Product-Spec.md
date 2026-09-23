@@ -44,6 +44,10 @@ export class TicketsService {
   updateStatus(id: string, status: TicketStatus): Ticket {
     const ticket = this.findOne(id);
 
+    if (ticket.status === status) {
+      return ticket;
+    }
+
     const currentIndex = Object.values(TicketStatus).indexOf(ticket.status);
     const nextIndex = Object.values(TicketStatus).indexOf(status);
 
