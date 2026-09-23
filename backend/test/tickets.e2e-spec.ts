@@ -21,16 +21,40 @@ describe('Ticket Service Request Flow (E2E)', () => {
     return request(app.getHttpServer())
       .patch('/tickets/TCK-101/status')
       .set('x-user-role', 'REQUESTER')
+      .set('x-user-id', 'requester-001')
       .send({ status: 'IN_PROGRESS' })
       .expect(403);
+  });
+
+  it('should UPDATE status for an authorized AGENT (200 OK)', () => {
+    return request(app.getHttpServer())
+      .patch('/tickets/TCK-101/status')
+      .set('x-user-role', 'AGENT')
+      .set('x-user-id', 'agent-001')
+      .send({ status: 'IN_PROGRESS' })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.id).toBe('TCK-101');
+        expect(body.status).toBe('IN_PROGRESS');
+      });
   });
 
   it('should REJECT invalid payload (400 Bad Request)', () => {
     return request(app.getHttpServer())
       .patch('/tickets/TCK-101/status')
       .set('x-user-role', 'AGENT')
+      .set('x-user-id', 'agent-001')
       .send({ status: 'INVALID_STATUS_VALUE' })
       .expect(400);
+  });
+
+  it('should return NOT FOUND for an unknown ticket', () => {
+    return request(app.getHttpServer())
+      .patch('/tickets/TCK-999/status')
+      .set('x-user-role', 'AGENT')
+      .set('x-user-id', 'agent-001')
+      .send({ status: 'IN_PROGRESS' })
+      .expect(404);
   });
 
   afterAll(async () => {
