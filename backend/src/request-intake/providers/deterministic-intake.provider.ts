@@ -5,7 +5,7 @@ import { IntakeCandidate, IntakeContext, IntakeProvider } from '../interfaces/in
 
 const categoryKeywords: Record<RequestCategory, string[]> = {
   [RequestCategory.IT]: ['laptop', 'computer', 'printer', 'software', 'vpn', 'wifi', 'email', 'screen'],
-  [RequestCategory.HR]: ['leave', 'benefit', 'payroll', 'onboarding', 'policy', 'manager'],
+  [RequestCategory.HR]: ['leave', 'benefit', 'payroll', 'salary', 'payslip', 'paycheck', 'compensation', 'wage', 'onboarding', 'policy', 'manager'],
   [RequestCategory.FACILITIES]: ['desk', 'chair', 'badge', 'room', 'office', 'maintenance', 'building'],
   [RequestCategory.ACCESS]: ['access', 'permission', 'account', 'license', 'password', 'login'],
 };
@@ -18,8 +18,14 @@ export class DeterministicIntakeProvider implements IntakeProvider {
       .map((candidate) => ({ candidate, score: categoryKeywords[candidate].filter((word) => normalized.includes(word)).length }))
       .sort((left, right) => right.score - left.score)[0];
     const selectedCategory = category?.score ? category.candidate : RequestCategory.IT;
+    const matchedSignals = category?.score
+      ? categoryKeywords[category.candidate].filter((word) => normalized.includes(word))
+      : [];
     const urgent = /urgent|asap|blocked|outage|cannot work|can't work/i.test(text);
     const approval = /admin|production|license|purchase|hardware|new laptop|new computer/i.test(normalized);
+    const reasons = category?.score
+      ? [`Matched ${selectedCategory} service language in the request.`]
+      : ['No service-specific category signal was found, so the request was sent to the default review queue.'];
     const missingInformation: string[] = [];
 
     if (!/\b(today|tomorrow|this week|by \w+day|asap|urgent)\b/i.test(text)) {
@@ -38,6 +44,16 @@ export class DeterministicIntakeProvider implements IntakeProvider {
       needsApproval: approval,
       ...(approval ? { approvalReason: 'This request may require manager or policy approval.' } : {}),
       missingInformation,
+      reasons: [
+        ...reasons,
+        ...(urgent ? ['Urgency language indicates elevated priority.'] : []),
+        ...(approval ? ['The request contains an approval-sensitive action.'] : []),
+      ],
+      signals: [
+        ...matchedSignals,
+        ...(urgent ? ['urgent'] : []),
+        ...(approval ? ['approval required'] : []),
+      ],
     };
   }
 

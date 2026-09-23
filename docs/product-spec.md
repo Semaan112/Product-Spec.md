@@ -20,9 +20,12 @@ III) Actors / Stakeholders
  Admin: Configures department routing rules, manages system access roles, and review platform analytics.
 
 IV) Functional requirements:
- Easy request submission: Employees pick a category like (HR, IT ---) and fill out a form to request help.
- Automatic Queueing: Tickets automatically go directly to the correct teams task list.
- Status Timers: Show agents which tickets are high urgency to get fixed first.
+ Easy request submission: Employees describe a request in free text and may provide a category hint.
+ Explainable classification: The assistant suggests category, priority, approval path, reasons, matched signals, and missing information.
+ Reviewed queue submission: A reviewer explicitly submits the prepared result to the detected team's task list.
+ Approval controls: Authorized staff can approve or reject approval-sensitive work before fulfillment begins.
+ Queue operations: Agents can filter, start, resolve, reject, and inspect tickets from a live queue.
+ Status timers: The queue prioritizes urgent work first.
 
 V) Non-Functional Requirements:
  Security: Strict Role-Based Access control employees can only view ticket they initiated.
@@ -36,8 +39,10 @@ VI) Assumptions / constraints / Unknowns
 VII) Non-Goals
  No External customer support
  No Direct Live chat & peer to peer real time messaging, audio, video calling feature will not be built in.
- No payroll or financial accounting process
+ No payroll or financial accounting process; HR salary questions may be classified and routed, but are not processed as payroll.
 
 VIII) Acceptance Criteria:
  User attempting to access tickets outside their authorized role or department are blocked with a clear permission error.
- An employee can submit a hardware request that correctly routes to their manager for approval before appearing in IT Fulfiller queue.
+ An employee can submit a hardware request that is classified with an approval requirement and appears in the team queue as awaiting approval.
+ An authorized reviewer can approve or reject the request; rejected or pending requests cannot be started or resolved.
+ A salary request is classified as HR and can be explicitly submitted to the HR queue.

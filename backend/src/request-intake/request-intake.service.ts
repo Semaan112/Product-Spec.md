@@ -35,7 +35,9 @@ export class RequestIntakeService {
     if (!Object.values(RequestCategory).includes(candidate.category)
       || !Object.values(RequestPriority).includes(candidate.priority)
       || candidate.confidence < 0 || candidate.confidence > 1
-      || !candidate.title.trim() || !candidate.summary.trim()) {
+      || !candidate.title.trim() || !candidate.summary.trim()
+      || (candidate.reasons && (!Array.isArray(candidate.reasons) || candidate.reasons.some((reason) => !reason.trim())))
+      || (candidate.signals && (!Array.isArray(candidate.signals) || candidate.signals.some((signal) => !signal.trim())))) {
       throw new BadGatewayException('The classification provider returned an invalid request result.');
     }
 

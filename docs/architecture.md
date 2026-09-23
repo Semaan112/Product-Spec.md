@@ -1,12 +1,14 @@
-# Architecture Draft: Internal Operations Service Hub
+# Architecture: Internal Operations Service Hub
+
+> This document distinguishes the implemented local workflow from the production target. The local application currently uses NestJS, an in-memory ticket store, and simulated role headers.
 
 # 1. System Overview & Major Components
 ![System Aarchitecture Diagram](./assets/archicture1.png)
 The Internal Operations Service Hub acts as a centralized portal for internal staff to manage operational workflows, submit internal service requests, and track administrative tasks across departments.
 
 * **Operations Web Client:** React-based single-page web interface used by internal employees and administrators to interact with the hub.
-* **Core Service API:** Node.js / Express REST API handling business logic, request routing, task state transitions, and role checks.
-* **Operational Database:** MySQL relational database managing durable application state, including user records, audit logs, and service ticket statuses.
+* **Core Service API:** NestJS REST API handling intake classification, reviewed ticket creation, queue reads, approval decisions, status transitions, and role checks.
+* **Operational Database:** Planned MySQL/TypeORM persistence layer. The current local slice uses an in-memory ticket store so the workflow can be evaluated without infrastructure.
 
 # 2. System Boundaries & Dependencies
 * *Inside System Boundary:** Operations Web Client, Core Service API, Operational Database, internal authorization rules.
@@ -15,11 +17,11 @@ The Internal Operations Service Hub acts as a centralized portal for internal st
   * *Notification Service (WhatsApp / Email Gateway):** Third-party messaging provider used to broadcast task updates and status alerts to staff.
 
 # 3. Data Flow & Security Checkpoints
-1. *Request Initiation:** An internal user submits an operational request or status update through the Web Client.
-2. *Authentication Guard:** The Core Service API intercepts the request, verifying the session token issued by the SSO provider.
-3. *Authorization & RBAC:** The API verifies if the user's role (e.g., *Manager*, *Operator*, *Admin*) permits updating or reading the requested operation state.
-4. **State Persistence:** The API executes authorized business logic and writes state changes directly to the Operational Database.
-5. **Notification Dispatch:** The API triggers an asynchronous alert job to the Notification Service to inform relevant actors.
+1. *Request Initiation:** An employee submits free text through the Request intake workspace.
+2. *Advisory Classification:** The intake provider suggests category, priority, approval requirements, reasons, matched signals, and missing information.
+3. *Reviewed Handoff:** A reviewer submits the prepared result to the detected team queue.
+4. *Authorization & Workflow:** Guarded agent actions approve, reject, start, or resolve tickets according to the current state.
+5. **State Persistence:** The local slice mutates an in-memory store; production will write durable ticket and audit records.
 
 # 4. Failure Handling & Requirement Traceability
 * *Notification Service Failure:** If the external messaging gateway is unreachable, the API logs the dispatch error and queues the alert for retry in the database without failing the primary operational transaction.
@@ -46,7 +48,7 @@ This checklist is a planning contract for the current work item. It defines what
 
 This inventory records what is known before calling a local build a release candidate. It is intentionally limited to the current repository; deployment, CI, and cloud setup are out of scope.
 
-* **Build and run commands:** Run `npm run build`, `npm test -- --runInBand`, and `npm run test:e2e` from `backend`. Run `npm run build` from `📁frontend`. Start the API with `npm run start:dev` from `backend` and the web client with `npm run dev` from `📁frontend`.
+* **Build and run commands:** Run `npm run build`, `npm test`, and `npm run test:e2e` from `backend`. Run `npm run build` from `frontend`. Start the API with `npm run start:dev` from `backend` and the web client with `npm run dev` from `frontend`.
 * **Environment-specific values:** The frontend calls `http://localhost:3000`, Vite serves on its local development port, and the backend allows the local frontend origin. These values must become environment configuration before deployment.
 * **Possible secrets:** No real credentials, tokens, or API keys are required by the current local slice. The `x-user-role` and `x-user-id` headers are test identity inputs, not authentication secrets, and must be replaced by verified identity data before production use.
 * **Existing automated checks:** Backend unit tests, backend E2E tests, backend TypeScript build, and frontend Vite production build are available. The E2E flow covers authorized update, denied role, invalid status, and unknown ticket cases. There are no frontend component tests yet.

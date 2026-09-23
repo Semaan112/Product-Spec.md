@@ -15,6 +15,8 @@ export interface IntakeCandidate {
   needsApproval: boolean;
   approvalReason?: string;
   missingInformation: string[];
+  reasons?: string[];
+  signals?: string[];
 }
 
 export interface IntakeProvider {

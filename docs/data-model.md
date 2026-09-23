@@ -3,6 +3,8 @@
 ## 1. Overview
 This data model supports an internal operations ticketing platform with department-level routing, custom SLA tracking, and internal discussion capabilities.
 
+The current local implementation uses a process-local ticket model while the durable schema is being prepared. Local tickets include `id`, `title`, `summary`, `category`, `priority`, `status`, `requester`, `approvalStatus`, `approvalReason`, `classificationReasons`, `classificationSignals`, `createdAt`, and `updatedAt`. Approval states are `NOT_REQUIRED`, `PENDING`, `APPROVED`, and `REJECTED`; work cannot start until required approval is complete.
+
 ## 2. Entities & Schema Definitions
 
 ### `users`

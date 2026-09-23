@@ -18,88 +18,89 @@ All primary product and technical specifications are organized within the `docs/
 ## 🛠️ Tech Stack
 
 * **Frontend:** React (Vite SPA)
-* **Backend:** Node.js / Express REST API
-* **Database:** MySQL
-* **Authentication:** OAuth 2.0 / SSO Integration
+# Internal Operations Service Hub
 
----
+The Internal Operations Service Hub is a local operations workflow prototype for submitting, classifying, reviewing, and resolving internal service requests.
 
-## 🚀 Getting Started
+## Documentation
 
-1. **Install Dependencies:**
-   ```bash
-   npm install
+* [Product specification](docs/product-spec.md)
+* [System architecture](docs/architecture.md)
+* [Data model](docs/data-model.md)
+* [ADR-001](docs/decisions/ADR-001.md)
 
-2. **Run development server:**
-```bash 
-npm run dev
+## Tech Stack
 
+* Frontend: React 18 with Vite
+* Backend: NestJS REST API
+* Validation: `class-validator` with a global whitelist pipe
+* Current storage: in-memory ticket store for the local prototype
+* Current authorization: guarded role headers for local workflow testing
 
----
+## Current Workflow
 
-## Week 2: NestJS Backend Setup & Verification
-
-### How to Run the Backend
-
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   npm install
-
-   npm run start:dev
-
-verify
-
-# 1. Create a ticket
-curl -X POST http://localhost:3000/tickets \
-  -H "Content-Type: application/json" \
-  -d '{"title":"System access issue"}'
-# -> {"id": "...", "status": "submitted", ...} copy the id into $ID
-
-# 2. VALID: submitted -> in_progress
-curl -X POST http://localhost:3000/tickets/$ID/transition \
-  -H "Content-Type: application/json" -d '{"status":"in_progress"}'
-# -> 201, status "in_progress"
-
-# 3. VALID: in_progress -> resolved
-curl -X POST http://localhost:3000/tickets/$ID/transition \
-  -H "Content-Type: application/json" -d '{"status":"resolved"}'
-# -> 201, status "resolved"
-
-# 4. INVALID: resolved -> in_progress (terminal state, rejected)
-curl -X POST http://localhost:3000/tickets/$ID/transition \
-  -H "Content-Type: application/json" -d '{"status":"in_progress"}'
-# -> 400 Bad Request
+1. A requester submits free-text intake through the **Request intake** workspace.
+2. The deterministic assistant suggests a category, priority, approval path, reasons, matched signals, and missing information.
+3. A reviewer submits the prepared result to the detected team queue.
+4. Agents work from the **Ticket queue** using `Start`, `Resolve`, and `Reject` actions.
+5. Approval-required tickets expose `Approve` and `Reject`; pending or rejected work cannot be started.
 
 ## Getting Started
 
 ### Prerequisites
-* Node.js (v18+)
+
+* Node.js 18+
 * npm
 
----
+### Install
 
-### Setup & Installation
+```bash
+cd backend
+npm install
 
-1. **Install Backend Dependencies**
-   ```bash
-   cd backend && npm install
+cd ../frontend
+npm install
+```
 
-   cd ../frontend && npm install
-   
+### Run locally
 
-   ###running the application
-   cd backend && npm run start:dev
-   cd frontend && npm run dev
+Start the API in one terminal:
 
-   ### running tests
-   cd backend && npm run test
+```bash
+cd backend
+npm run start:dev
+```
 
-   ###integration & E2E tests
-   cd backend && npm run test:e2e
+Start the web client in another terminal:
 
-  ### v0.4 AI intake evaluation
-  cd backend && npm run eval:intake
+```bash
+cd frontend
+npm run dev
+```
 
-   ### Documentation
-  For the v0.4 capability and evaluation contract, refer to [docs/week4-production-ai.md](docs/week4-production-ai.md).
+Open `http://localhost:5173`. The API runs at `http://localhost:3000`.
+
+### Verify the project
+
+```bash
+cd backend
+npm test
+npm run test:e2e
+npm run eval:intake
+npm run build
+
+cd ../frontend
+npm run build
+```
+
+## API Overview
+
+* `POST /request-intake/classify` - classify and explain a free-text request.
+* `GET /tickets` - return the prioritized live queue.
+* `POST /tickets` - submit a reviewed intake result as a ticket.
+* `PATCH /tickets/:id/status` - move an authorized ticket forward.
+* `PATCH /tickets/:id/approval` - approve or reject a ticket.
+
+## Production Roadmap
+
+The local slice is focused on workflow behavior. Before production, replace the in-memory store with durable persistence, replace simulated identity headers with SSO authentication, and add audit history, SLA tracking, and frontend component tests.

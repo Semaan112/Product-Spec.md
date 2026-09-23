@@ -22,6 +22,8 @@ describe('RequestIntakeService', () => {
     ['urgent access', 'I am blocked and need permission for the finance app today.', RequestCategory.ACCESS, RequestPriority.HIGH],
     ['facilities request', 'Please repair the chair in my office this week.', RequestCategory.FACILITIES, RequestPriority.NORMAL],
     ['hr request', 'Can you explain the parental leave policy by Friday?', RequestCategory.HR, RequestPriority.NORMAL],
+    ['salary request', 'I have a question about my salary for this month.', RequestCategory.HR, RequestPriority.NORMAL],
+    ['compensation request', 'My compensation statement needs clarification.', RequestCategory.HR, RequestPriority.NORMAL],
     ['approval request', 'Please purchase a new computer for my team.', RequestCategory.IT, RequestPriority.NORMAL],
   ])('classifies %s into a bounded structured result', async (_name, text, category, priority) => {
     const result = await new (await import('./providers/deterministic-intake.provider')).DeterministicIntakeProvider()
@@ -32,6 +34,7 @@ describe('RequestIntakeService', () => {
     expect(result.title).toContain(category);
     expect(result.confidence).toBeGreaterThanOrEqual(0);
     expect(result.confidence).toBeLessThanOrEqual(1);
+    expect(result.reasons?.length).toBeGreaterThan(0);
   });
 
   it('preserves an explicit product category over the advisory suggestion', async () => {
@@ -60,5 +63,14 @@ describe('RequestIntakeService', () => {
 
     await expect(new RequestIntakeService(failedProvider).classify({ text: 'A valid request description.' }))
       .rejects.toThrow('Request classification is temporarily unavailable');
+  });
+
+  it('explains salary classification with matched evidence', async () => {
+    const result = await new (await import('./providers/deterministic-intake.provider')).DeterministicIntakeProvider()
+      .classify('I have a question about my salary for this month.', { categories: Object.values(RequestCategory), priorities: Object.values(RequestPriority) });
+
+    expect(result.category).toBe(RequestCategory.HR);
+    expect(result.reasons).toContain('Matched HR service language in the request.');
+    expect(result.signals).toContain('salary');
   });
 });

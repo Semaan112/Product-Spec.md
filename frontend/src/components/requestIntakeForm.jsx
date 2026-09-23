@@ -10,12 +10,13 @@ const categories = [
 
 const apiUrl = 'http://localhost:3000';
 
-export function RequestIntakeForm() {
+export function RequestIntakeForm({ onTicketCreated }) {
   const [text, setText] = useState('');
   const [category, setCategory] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRouting, setIsRouting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -41,6 +42,38 @@ export function RequestIntakeForm() {
       setIsSubmitting(false);
     }
   };
+
+  const routeToQueue = async () => {
+    const candidate = result.candidate;
+    setError('');
+    setIsRouting(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/tickets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: candidate.title,
+          summary: candidate.summary,
+          category: candidate.category,
+          priority: candidate.priority,
+          needsApproval: candidate.needsApproval,
+          approvalReason: candidate.approvalReason,
+          requester: 'Service desk requester',
+          classificationReasons: candidate.reasons,
+          classificationSignals: candidate.signals,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'The request could not be submitted to the team queue.');
+      onTicketCreated(data);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsRouting(false);
+    }
+  };
+
 
   return (
     <main className="intake-shell">
@@ -94,7 +127,9 @@ export function RequestIntakeForm() {
             <div className="result-facts"><div><span>Category</span><strong>{result.candidate.category}</strong></div><div><span>Priority</span><strong className={result.candidate.priority === 'HIGH' ? 'priority-high' : ''}>{result.candidate.priority}</strong></div><div><span>Approval</span><strong>{result.candidate.needsApproval ? 'Review needed' : 'Not indicated'}</strong></div></div>
             {result.candidate.approvalReason && <div className="result-callout"><strong>Approval path</strong><span>{result.candidate.approvalReason}</span></div>}
             {result.candidate.missingInformation.length > 0 && <div className="missing-info"><strong>Helpful before routing</strong><ul>{result.candidate.missingInformation.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+            {result.candidate.reasons?.length > 0 && <div className="decision-panel"><strong>Why this suggestion</strong><ul>{result.candidate.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>{result.candidate.signals?.length > 0 && <div className="signal-list"><span>Signals found</span>{result.candidate.signals.map((signal) => <span className="signal-chip" key={signal}>{signal}</span>)}</div>}</div>}
             <div className="advisory-copy">{result.advisory}</div>
+            <button type="button" className="route-button" onClick={routeToQueue} disabled={isRouting}><span>{isRouting ? 'Submitting to team queue...' : `Submit to ${result.candidate.category} queue`}</span><span className="button-arrow">-&gt;</span></button>
           </>}
         </aside>
       </div>
