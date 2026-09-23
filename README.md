@@ -98,5 +98,8 @@ curl -X POST http://localhost:3000/tickets/$ID/transition \
    ###integration & E2E tests
    cd backend && npm run test:e2e
 
+  ### v0.4 AI intake evaluation
+  cd backend && npm run eval:intake
+
    ### Documentation
-   For full delivery specifications and API contracts, refer to ⁠docs/week3-full-stack-delivery.md⁠.
+  For the v0.4 capability and evaluation contract, refer to [docs/week4-production-ai.md](docs/week4-production-ai.md).

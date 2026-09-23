@@ -7,6 +7,7 @@
     "build": "nest build",
     "start": "nest start",
     "test": "jest --runInBand --config jest.config.js",
+    "eval:intake": "jest --runInBand --config jest.config.js --runTestsByPath src/request-intake/request-intake.service.spec.ts",
     "test:e2e": "jest --runInBand --config jest.config.js --runTestsByPath test/tickets.e2e-spec.ts"
   },
   "dependencies": {
